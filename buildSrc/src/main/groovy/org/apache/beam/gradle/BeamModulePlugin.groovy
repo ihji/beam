@@ -403,6 +403,7 @@ class BeamModulePlugin implements Plugin<Project> {
     def protobuf_version = "3.11.1"
     def quickcheck_version = "0.8"
     def spark_version = "2.4.5"
+    def zookeeper_version = "3.5.6"
 
     // A map of maps containing common libraries used per language. To use:
     // dependencies {
@@ -549,6 +550,7 @@ class BeamModulePlugin implements Plugin<Project> {
         vendored_guava_26_0_jre                     : "org.apache.beam:beam-vendor-guava-26_0-jre:0.1",
         vendored_calcite_1_20_0                     : "org.apache.beam:beam-vendor-calcite-1_20_0:0.1",
         woodstox_core_asl                           : "org.codehaus.woodstox:woodstox-core-asl:4.4.1",
+        zookeeper                                   : "org.apache.zookeeper:zookeeper:$zookeeper_version",
         zstd_jni                                    : "com.github.luben:zstd-jni:1.3.8-3",
         quickcheck_core                             : "com.pholser:junit-quickcheck-core:$quickcheck_version",
       ],
