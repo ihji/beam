@@ -316,8 +316,10 @@ public class Environments {
 
   public static String createStagingFileName(File path) {
     String ext = path.isDirectory() ? "jar" : Files.getFileExtension(path.getAbsolutePath());
-    String suffix = Strings.isNullOrEmpty(ext) ? "" : "." + ext;
-    return UUID.randomUUID().toString() + suffix;
+    String suffix =
+            Files.getNameWithoutExtension(path.getAbsolutePath())
+                    + (Strings.isNullOrEmpty(ext) ? "" : "." + ext);
+    return UUID.randomUUID().toString() + "-" + suffix;
   }
 
   private static File zipDirectory(File directory) throws IOException {
