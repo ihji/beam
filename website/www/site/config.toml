@@ -78,6 +78,13 @@ description = "Apache Beam is an open source, unified model and set of language-
 languageName ="English"
 # Weight used for sorting.
 weight = 1
+[languages.ko]
+contentDir = "content/ko"
+title = "Apache Beam"
+description = "Apache Beam is an open source, unified model and set of language-specific SDKs for defining and executing data processing workflows, and also data ingestion and integration flows, supporting Enterprise Integration Patterns (EIPs) and Domain Specific Languages (DSLs). Dataflow pipelines simplify the mechanics of large-scale batch and streaming data processing and can run on a number of runtimes like Apache Flink, Apache Spark, and Google Cloud Dataflow (a cloud service). Beam also brings DSL in different languages, allowing users to easily implement their data integration processes."
+languageName = "한국어"
+weight = 2
+
 
 # RSS template configuration
 [outputs]
