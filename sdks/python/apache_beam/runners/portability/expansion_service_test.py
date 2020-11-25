@@ -51,6 +51,8 @@ TEST_COMGL_URN = "beam:transforms:xlang:test:comgl"
 TEST_COMPK_URN = "beam:transforms:xlang:test:compk"
 TEST_FLATTEN_URN = "beam:transforms:xlang:test:flatten"
 TEST_PARTITION_URN = "beam:transforms:xlang:test:partition"
+TEST_PRODUCE_OBJ_URN = "beam:transforms:xlang:test:produce_obj"
+TEST_CONSUME_OBJ_URN = "beam:transforms:xlang:test:consume_obj"
 
 
 @ptransform.PTransform.register_urn('beam:transforms:xlang:count', None)
@@ -224,6 +226,45 @@ class PartitionTransform(ptransform.PTransform):
   def from_runner_api_parameter(
       unused_ptransform, unused_parameter, unused_context):
     return PartitionTransform()
+
+
+class AddingObject(object):
+  def __init__(self, x, y):
+    self._x = x
+    self._y = y
+
+  def get_result(self):
+    return self._x + self._y
+
+
+@ptransform.PTransform.register_urn(TEST_PRODUCE_OBJ_URN, None)
+class ProduceObjTransform(ptransform.PTransform):
+  def expand(self, pbegin):
+    return pbegin | beam.Create([
+        AddingObject(1, 2)])
+
+  def to_runner_api_parameter(self, unused_context):
+    return TEST_PRODUCE_OBJ_URN, None
+
+  @staticmethod
+  def from_runner_api_parameter(
+      unused_ptransform, unused_parameter, unused_context):
+    return ProduceObjTransform()
+
+
+@ptransform.PTransform.register_urn(TEST_CONSUME_OBJ_URN, None)
+class ConsumeObjTransform(ptransform.PTransform):
+  def expand(self, input):
+    return input | beam.Map(
+        lambda x: x.get_result()).with_output_types(int)
+
+  def to_runner_api_parameter(self, unused_context):
+    return TEST_CONSUME_OBJ_URN, None
+
+  @staticmethod
+  def from_runner_api_parameter(
+      unused_ptransform, unused_parameter, unused_context):
+    return ConsumeObjTransform()
 
 
 @ptransform.PTransform.register_urn('payload', bytes)
