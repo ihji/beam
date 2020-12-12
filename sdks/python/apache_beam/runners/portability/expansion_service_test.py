@@ -51,6 +51,7 @@ TEST_COMGL_URN = "beam:transforms:xlang:test:comgl"
 TEST_COMPK_URN = "beam:transforms:xlang:test:compk"
 TEST_FLATTEN_URN = "beam:transforms:xlang:test:flatten"
 TEST_PARTITION_URN = "beam:transforms:xlang:test:partition"
+TEST_SQLITE_WRITE_URN = "beam:transforms:xlang:test:sqlite_write"
 
 
 @ptransform.PTransform.register_urn('beam:transforms:xlang:count', None)
@@ -224,6 +225,41 @@ class PartitionTransform(ptransform.PTransform):
   def from_runner_api_parameter(
       unused_ptransform, unused_parameter, unused_context):
     return PartitionTransform()
+
+
+class SqliteWriteDoFn(beam.DoFn):
+  def setup(self):
+    from apache_beam.runners.portability.expansion_service import SqliteWriteTransformHelper
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    engine = create_engine('sqlite:////tmp/xlang_sqlite_test.db')
+    SqliteWriteTransformHelper.Base.metadata.bind = engine
+    DBSession = sessionmaker(bind=engine)
+    self.session = DBSession()
+
+  def process(self, element):
+    from apache_beam.runners.portability.expansion_service import SqliteWriteTransformHelper
+    self.session.add(SqliteWriteTransformHelper.Person(name=element.name, age=element.age))
+
+  def finish_bundle(self):
+    self.session.commit()
+
+  def teardown(self):
+    self.session.close()
+
+
+@ptransform.PTransform.register_urn(TEST_SQLITE_WRITE_URN, None)
+class SqliteWriteTransform(ptransform.PTransform):
+  def expand(self, pcoll):
+    return pcoll | beam.ParDo(SqliteWriteDoFn()).with_output_types(int)
+
+  def to_runner_api_parameter(self, unused_context):
+    return TEST_SQLITE_WRITE_URN, None
+
+  @staticmethod
+  def from_runner_api_parameter(
+      unused_ptransform, unused_parameter, unused_context):
+    return SqliteWriteTransform()
 
 
 @ptransform.PTransform.register_urn('payload', bytes)

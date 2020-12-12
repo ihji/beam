@@ -103,6 +103,7 @@ public class ValidateRunnerXlangTest implements Serializable {
   private static final String TEST_COMPK_URN = "beam:transforms:xlang:test:compk";
   private static final String TEST_FLATTEN_URN = "beam:transforms:xlang:test:flatten";
   private static final String TEST_PARTITION_URN = "beam:transforms:xlang:test:partition";
+  private static final String TEST_SQLITE_WRITE_URN = "beam:transforms:xlang:test:sqlite_write";
 
   private static String expansionAddr;
   private static String expansionJar;
@@ -150,7 +151,7 @@ public class ValidateRunnerXlangTest implements Serializable {
    * Boundary conditions checked – –> PCollection<?> to external transforms –> PCollection<?> from
    * external transforms
    */
-  @Test
+  //@Test
   @Category({ValidatesRunner.class, UsesCrossLanguageTransforms.class})
   public void singleInputOutputTest() throws IOException {
     PCollection<String> col =
@@ -168,7 +169,7 @@ public class ValidateRunnerXlangTest implements Serializable {
    * output collections (main and side) Boundary conditions checked – –> PCollectionTuple to
    * external transforms –> PCollectionTuple from external transforms
    */
-  @Test
+  //@Test
   @Category({ValidatesRunner.class, UsesCrossLanguageTransforms.class})
   public void multiInputOutputWithSideInputTest() {
     PCollection<String> main1 = testPipeline.apply("createMain1", Create.of("a", "bb"));
@@ -192,7 +193,7 @@ public class ValidateRunnerXlangTest implements Serializable {
    * checked – –> PCollection<KV<?, ?>> to external transforms –> PCollection<KV<?, Iterable<?>>>
    * from external transforms
    */
-  @Test
+  //@Test
   @Category({ValidatesRunner.class, UsesCrossLanguageTransforms.class})
   public void groupByKeyTest() {
     PCollection<KV<Long, Iterable<String>>> gbkCol =
@@ -220,7 +221,7 @@ public class ValidateRunnerXlangTest implements Serializable {
    * Boundary conditions checked – –> KeyedPCollectionTuple<?> to external transforms –>
    * PCollection<KV<?, Iterable<?>>> from external transforms
    */
-  @Test
+  //@Test
   @Category({ValidatesRunner.class, UsesCrossLanguageTransforms.class})
   public void coGroupByKeyTest() {
     PCollection<KV<Long, String>> col1 =
@@ -251,7 +252,7 @@ public class ValidateRunnerXlangTest implements Serializable {
    * elements globally with a predefined simple CombineFn Boundary conditions checked – –>
    * PCollection<?> to external transforms –> PCollection<?> from external transforms
    */
-  @Test
+  //@Test
   @Category({ValidatesRunner.class, UsesCrossLanguageTransforms.class})
   public void combineGloballyTest() {
     PCollection<Long> col =
@@ -269,7 +270,7 @@ public class ValidateRunnerXlangTest implements Serializable {
    * elements per key with a predefined simple merging function Boundary conditions checked – –>
    * PCollection<?> to external transforms –> PCollection<?> from external transforms
    */
-  @Test
+  //@Test
   @Category({ValidatesRunner.class, UsesCrossLanguageTransforms.class})
   public void combinePerKeyTest() {
     PCollection<KV<String, Long>> col =
@@ -287,7 +288,7 @@ public class ValidateRunnerXlangTest implements Serializable {
    * multiple collections into a single collection Boundary conditions checked – –>
    * PCollectionList<?> to external transforms –> PCollection<?> from external transforms
    */
-  @Test
+  //@Test
   @Category({ValidatesRunner.class, UsesCrossLanguageTransforms.class})
   public void flattenTest() {
     PCollection<Long> col1 = testPipeline.apply("createCol1", Create.of(1L, 2L, 3L));
@@ -308,7 +309,7 @@ public class ValidateRunnerXlangTest implements Serializable {
    * conditions checked – –> PCollection<?> to external transforms –> PCollectionList<?> from
    * external transforms
    */
-  @Test
+  //@Test
   @Category({ValidatesRunner.class, UsesCrossLanguageTransforms.class})
   public void partitionTest() {
     PCollectionTuple col =
@@ -318,6 +319,19 @@ public class ValidateRunnerXlangTest implements Serializable {
                 External.of(TEST_PARTITION_URN, new byte[] {}, expansionAddr).withMultiOutputs());
     PAssert.that(col.get("0")).containsInAnyOrder(2L, 4L, 6L);
     PAssert.that(col.get("1")).containsInAnyOrder(1L, 3L, 5L);
+  }
+
+  @Test
+  @Category({ValidatesRunner.class, UsesCrossLanguageTransforms.class})
+  public void sqliteWriteTest() {
+    Schema schema = Schema.builder().addStringField("name").addInt32Field("age").build();
+    testPipeline
+        .apply(Create.of(
+            Row.withSchema(schema).addValues("John", 20).build(),
+            Row.withSchema(schema).addValues("Leo", 4).build()
+        )).setCoder(RowCoder.of(schema))
+        .apply(
+            External.of(TEST_SQLITE_WRITE_URN, new byte[] {}, expansionAddr));
   }
 
   private byte[] toStringPayloadBytes(String data) throws IOException {

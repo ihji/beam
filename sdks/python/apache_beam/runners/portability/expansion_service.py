@@ -34,6 +34,18 @@ from apache_beam.transforms import external
 from apache_beam.transforms import ptransform
 
 
+class SqliteWriteTransformHelper(object):
+  from sqlalchemy.ext.declarative import declarative_base
+  Base = declarative_base()
+
+  class Person(Base):
+    from sqlalchemy import Column, Integer, String
+    __tablename__ = 'person'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(250), nullable=False)
+    age = Column(Integer)
+
+
 class ExpansionServiceServicer(
     beam_expansion_api_pb2_grpc.ExpansionServiceServicer):
   def __init__(self, options=None):
